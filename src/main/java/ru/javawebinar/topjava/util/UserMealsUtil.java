@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 public class UserMealsUtil {
@@ -28,8 +30,26 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        // TODO return filtered list with excess. Implement by cycles
-        return null;
+        HashMap<String, Integer> sumCaloriesPerDay=new HashMap<>();
+        LinkedList<UserMeal> filteredByTime=new LinkedList<>();
+        for (UserMeal userMeal:meals){
+            sumCaloriesPerDay.merge(userMeal.getDateTime().toLocalDate().toString(), userMeal.getCalories(), Integer::sum);
+            LocalTime time=userMeal.getDateTime().toLocalTime();
+            if (time.isAfter(startTime)&time.isBefore(endTime)){
+                filteredByTime.add(userMeal);
+            }
+        }
+
+        List<UserMealWithExcess> result=new LinkedList<>();
+        for (UserMeal meal:filteredByTime){
+                result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), getCaloriesPerDayForMeal(sumCaloriesPerDay, meal)>caloriesPerDay));
+
+        }
+        return result;
+    }
+
+    private static int getCaloriesPerDayForMeal(HashMap<String, Integer> map, UserMeal meal){
+        return map.get(meal.getDateTime().toLocalDate().toString());
     }
 
     public static List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
